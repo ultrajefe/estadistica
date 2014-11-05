@@ -13,7 +13,7 @@ base<-base[base$edo==9,]
 muestras.vivienda(casos=2000,
                   base=base,
                   casos.estrato=NULL,
-                  niveles=c("municipio"),
+                  niveles=c("estado","municipio"),
                   upm="secc",
                   tamano="ln",
                   factor.p=1,
@@ -48,19 +48,15 @@ muestras.vivienda<-function(casos,
   ##################################################################################
   
   
-  #(1)  
-  #Adalberto
-  #crear el vector de valores numéricos n.niveles y las variables numéricas n.upm n.tamano que contengan los números de columna correspondientes
+  #se crean los identificadores numéricos de las variables
+  
   n.niveles<-match(niveles,names(base))
   n.upm<-match(upm,names(base))
   n.tamaño<-match(tamano,names(base))
   
-  (2)
-  #Jess
-  #ordenar la base primero por los elementos de la variable niveles y luego por la variable upm, en este caso por mun y luego por secc (haciendo referencia a los
-  #vectores que va a crear Adalberto)
-  #convertir las variables niveles y de upm en categóricas y quitar cualquier estrato extra en estas
-  	base<-base[order(base[n.niveles],base[n.upm]),]
+
+  # se ordena la base tomando como criterio los niveles
+  # se quitan los niveles sin elementos
 	
 	v<-NULL
 	for(i in 1:length(n.niveles)){
@@ -80,7 +76,7 @@ muestras.vivienda<-function(casos,
 	base[,n.upm]<-as.factor(base[,n.upm])
 	base[,n.upm]<-droplevels(base[,n.upm])
 	
-  (1)
+  
   #Alberto
   #crear el dataframe informacion que tenga como renglones a los niveles (en este caso va a tener 16 renglones correspondientes a las delegaciones), y cuyos rownames sean dichos nombres,
   #otra columna llamada "tamano" con el tamaño de cada uno de los niveles
