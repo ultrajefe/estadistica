@@ -101,6 +101,32 @@ muestras.vivienda<-function(casos,
     stop('LA ASIGNACION DE CASOS NO ES ADECUADA \n\n')
   }
 
+  position<-NULL
+  aux<-0.5
+  informacion$casos.finales<-round(informacion$casos,0)
+  casosbis<-informacion$casos-floor(informacion$casos)
+  while (sum(informacion$casos.finales)!=casos){
+  if (sum(informacion$casos.finales)<casos) {
+      for (ii in 1:length(casosbis)){
+        if (casosbis[ii]<0.5 & (0.5-casosbis[ii])<aux) {
+          aux<-0.5-casosbis[ii]
+          position<-ii
+        }
+      }
+    informacion$casos.finales[position]<-informacion$casos.finales[position]+1
+    casosbis[position]<-0
+  } else if (sum(informacion$casos.finales)>casos){
+    for (ii in 1:length(casosbis)){
+      if (casosbis[ii]>0.5 & (1-casosbis[ii])<aux) {
+        aux<-1-casosbis[ii]
+        position<-ii
+      }
+    }
+  informacion$casos.finales[position]<-informacion$casos.finales[position]-1
+  casosbis[position]<-1
+  } 
+}
+
   
   basemuestra<<-base
   informacion<<-informacion
