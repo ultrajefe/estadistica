@@ -77,11 +77,10 @@ muestras.vivienda<-function(casos,
 	base[,n.upm]<-droplevels(base[,n.upm])
 	
   
-  #Alberto
-  #crear el dataframe informacion que tenga como renglones a los niveles (en este caso va a tener 16 renglones correspondientes a las delegaciones), y cuyos rownames sean dichos nombres,
-  #otra columna llamada "tamano" con el tamaño de cada uno de los niveles
-  #otra columna llamada "casos" que asigne casos a cada nivel de manera proporcional al tamaño los casos
-  #pero que en caso de tener algun número asignado para la variable "casos.estrato" asigne el número de casos ahi definido a cada nivel
+  
+    #se crea el objeto de información, contiene los estratos finales (llamados identificador) y el número de casos asignados a cada estrato
+    
+    
   
     var.identificador<-''
     for (ii in 1:length(niveles)){
