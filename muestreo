@@ -123,8 +123,6 @@ muestras.vivienda<-function(casos,
         aux<-casosbis[ii]-0.5
         position<-ii
       }
-#        position;ii;aux;casosbis
-#        ii<-ii+1
     }
   informacion$casos.finales[position]<-floor(informacion$casos[position])
   casosbis[position]<-1
