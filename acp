@@ -1,0 +1,97 @@
+library('psych')  ##corr.test
+
+setwd('//192.168.1.27/Alberto/evaluacion de personajes - 30oct2014')
+
+base<-read.csv2('ciudadania1.csv',sep=',')
+
+summary(base)
+
+
+observaciones<-NULL
+datafin<-NULL
+matpesos<-matrix(NA,50,3)
+
+for(j in 1:50){
+  cat('\n\n\n\nINDIVIDUO ',j,'\n\n')
+  
+  datos<-eval(parse(text=paste('base[base$individuo==',j,',5:9]',sep='')))
+  x11()
+  pairs(datos)
+  datos<-datos[,3:5]
+  datos<-na.omit(datos)
+  
+  cat('\n\n','OBSERVACIONES :',nrow(datos),'\n\n\n')
+  observaciones[j]<-nrow(datos)
+
+  #Estaditicos preeliminares para ver si es factible usar ACP
+  Preeliminares <-list(
+    cat('Matriz de correalciones','\n',corr.test(datos[,3:5])$r,'\n'),
+    cat('Valores de probabilidad para la matriz de correalciones','\n',corr.test(datos[,3:5])$p,'\n'),
+    cat('Determinante de la matriz de correlaciones','\n',det(corr.test(datos[,3:5])$r),'\n'),
+    cat('KMO','\n',KMO(datos[,3:5])$MSA,'\n','\n'),
+    cat('Valor de p para la prueba de esfericidad de Bartlett','\n',cortest.bartlett(datos[,3:5])$p.value,'\n'))
+
+  #ACP del as variables consideradas
+  acp <- prcomp(datos[,3:5],center=TRUE, scale.=TRUE)
+  summary(acp)
+
+
+  #Varianza explicada por cada componente
+  varexplic <- acp$sdev**2/sum(acp$sdev**2)*100
+  cat('\n','Varianza explicada por cada componente ','\n\n',round(varexplic,2),'\n')
+
+  varcum<-0
+  i<-1
+  while (varcum<56){
+    varcum<-varcum+varexplic[i]
+    nocomp<-i
+    cat('Varianza acumulada explicada por la(s) primera(s)',i,'componente(s) =',varcum,'\n','\n')
+    cat('Numero de componentes = ',i,'\n','\n')
+    i<-i+1
+  }
+
+  #Obtencion de los pesos de cada variable. Se suman primero las cargas de cada 
+  #componente respecto a cada variable. Posteriormente se llevan al rango [0,1]
+  cargas<-0
+  for (i in 1:nocomp){
+    cargas<-cargas+acp$rotation[,i]
+  }
+  pesos<-cargas/sum(cargas)
+  matpesos[j,]<-pesos
+  cat('Los pesos son:','\n','\n',pesos)
+  
+#Calculo del indice
+  datos$score<-as.matrix(datos[,3:5])%*%pesos
+  datafin[j]<-datos
+
+x11()
+fa.parallel(datos[,3:5], fm="minres", fa="both",
+            main = "Parallel Analysis Scree Plots",
+            n.iter=10,error.bars=T,SMC=FALSE,ylabel=NULL,show.legend=TRUE)
+#  write.table(datos,paste('datos ',j,'.csv',sep=''),row.names=F,quote=T,col.names=T,sep=';')
+
+
+
+}
+
+ write.table(matpesos,'pesos de los acp.csv',row.names=T,quote=T,col.names=T,sep=';')
+ write.table(datafin,'datoscompletos.csv',row.names=T,quote=T,col.names=T,sep=';')
+ 
+
+
+
+
+
+ 
+
+base<-read.csv('datos.csv',sep=',')
+
+pairs(base[,3:6])
+hist(base[,6])
+reg<-lm(score~eficacia+influencia+trasendencia-1,base)
+summary(reg)
+anova(reg)
+str(base)
+
+plot(reg)
+
