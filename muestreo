@@ -79,9 +79,9 @@ muestras.vivienda<-function(casos,
 	base[,n.upm]<-droplevels(base[,n.upm])
 	
   
-  
+    #############################################################################################################
     #se crea el objeto de información, contiene los estratos finales (llamados identificador) y el número de casos asignados a cada estrato
-    
+    ##############################################################################################################
     
   
     var.identificador<-''
@@ -103,6 +103,97 @@ muestras.vivienda<-function(casos,
     stop('LA ASIGNACION DE CASOS NO ES ADECUADA \n\n')
   }
 
+  
+  #######################################################################################################
+  ########### cREANDO EL ESTRATO RESTO###################################################################
+  #######################################################################################################
+  
+  require(plyr)
+  casos1<-informacion$casos
+  y<-which(casos1<minimo.estrato)
+  base$identificador.final<-base$identificador
+  
+  if(length(y)!=0){
+    v1<-NULL
+    for(i in 1:length(y)){
+      v1[i]<-paste("'",names(y)[i],"'",sep="")
+    }
+    
+    v1<-paste(v1,collapse=",")
+    
+    v2<-rep("resto",length(y))
+    
+    v3<-NULL
+    for(i in 1:length(y)){
+      v3[i]<-paste("'",v2[i],"'",sep="")
+    }
+    
+    v3<-paste(v3,collapse=",")
+    
+    base$identificador.final<-eval(parse(text=paste(
+      'mapvalues(base$identificador.final, from = c(',v1,'),to = c(',v3,'))'
+      ,sep="")))
+    
+    n.identificador<-match('identificador.final',names(base))
+  
+  
+  ##############################################################################
+  ### recalculo el objeto información   ########################################
+  ##############################################################################
+  
+    informacion<-data.frame(row.names =levels(base$identificador.final))
+    informacion$tamaño<-tapply(base[,n.tamaño],base$identificador.final,sum)
+    if (length(casos.estrato)==0){
+      informacion$casos<-informacion$tamaño/sum(informacion$tamaño)*casos
+    } else if (length(casos.estrato)==nrow(informacion)) {
+      informacion$casos<-casos.estrato
+    } else if (length(casos.estrato)==1) {
+      cat('A cada estrato se le asignara el numero de casos: ',casos,'\n\n')
+      informacion$casos<-casos.estrato
+    } else {
+      stop('LA ASIGNACION DE CASOS NO ES ADECUADA \n\n')
+    }
+    
+    base<-base
+    informacion<-informacion
+  }else{
+    informacion<-informacion
+    base<-base
+  }
+  
+  ################################################################################################
+  ########## redondeo el número de casos dentro del objeto información  ##########################
+  ################################################################################################
+  
+  
+  informacion$casos.finales<-round(informacion$casos,0)
+  casosbis<-informacion$casos-floor(informacion$casos)
+  while (sum(informacion$casos.finales)!=casos){
+    position<-NULL
+    aux<-0.5
+    ii<-0  
+    if (sum(informacion$casos.finales)<casos) {
+      for (ii in 1:length(casosbis)){
+        if (casosbis[ii]<0.5 & (0.5-casosbis[ii])<aux) {
+          aux<-0.5-casosbis[ii]
+          position<-ii
+        }
+      }
+      informacion$casos.finales[position]<-informacion$casos.finales[position]+1
+      casosbis[position]<-0
+    } else if (sum(informacion$casos.finales)>casos){
+      for (ii in 1:length(casosbis)){
+        if (casosbis[ii]>0.5 & (casosbis[ii]-0.5)<aux) {
+          aux<-casosbis[ii]-0.5
+          position<-ii
+        }
+      }
+      informacion$casos.finales[position]<-floor(informacion$casos[position])
+      casosbis[position]<-1
+    } 
+  }
+  
+  
   
   basemuestra<<-base
   informacion<<-informacion
