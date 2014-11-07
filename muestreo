@@ -105,50 +105,56 @@ muestras.vivienda<-function(casos,
   basemuestra<<-base
   informacion<<-informacion
   
-### Creando el estrato resto  
-  
+########### cREANDO EL ESTRATO RESTO
 library(plyr)
 casos1<-informacion$casos
 y<-which(casos1<minimo.estrato)
 base$identificador.final<-base$identificador
 
-v1<-NULL
-for(i in 1:length(y)){
-	v1[i]<-paste("'",names(y)[i],"'",sep="")
+if(length(y)!=0){
+	v1<-NULL
+	for(i in 1:length(y)){
+		v1[i]<-paste("'",names(y)[i],"'",sep="")
+	}
+	
+	v1<-paste(v1,collapse=",")
+	
+	v2<-rep("resto",length(y))
+	
+	v3<-NULL
+	for(i in 1:length(y)){
+		v3[i]<-paste("'",v2[i],"'",sep="")
+	}
+	
+	v3<-paste(v3,collapse=",")
+	
+	base$identificador.final<-eval(parse(text=paste(
+		'mapvalues(base$identificador.final, from = c(',v1,'),to = c(',v3,'))'
+		,sep="")))
+	
+	n.identificador<-match('identificador.final',names(base))
+	
+	### Calculando de nuevo 
+	informacion<-data.frame(row.names =levels(base$identificador.final))
+	informacion$tamaño<-tapply(base[,n.tamaño],base$identificador.final,sum)
+	if (length(casos.estrato)==0){
+		informacion$casos<-informacion$tamaño/sum(informacion$tamaño)*casos
+	} else if (length(casos.estrato)==nrow(informacion)) {
+		informacion$casos<-casos.estrato
+	} else if (length(casos.estrato)==1) {
+		cat('A cada estrato se le asignara el numero de casos: ',casos,'\n\n')
+		informacion$casos<-casos.estrato
+	} else {
+		stop('LA ASIGNACION DE CASOS NO ES ADECUADA \n\n')
+	}
+	
+	basemuestra<<-base
+	informacion<<-informacion
+}else{
+	informacion<-informacion
+	base<-base
+	basemuestra<-basemuestra
 }
-
-v1<-paste(v1,collapse=",")
-
-v2<-rep("resto",length(y))
-
-v3<-NULL
-for(i in 1:length(y)){
-	v3[i]<-paste("'",v2[i],"'",sep="")
-}
-
-v3<-paste(v3,collapse=",")
-
-base$identificador.final<-eval(parse(text=paste(
-	'mapvalues(base$identificador.final, from = c(',v1,'),to = c(',v3,'))'
-	,sep="")))
-
-n.identificador<-match('identificador.final',names(base))
-
-### Calculando de nuevo 
-informacion<-data.frame(row.names =levels(base$identificador.final))
-informacion$tamaño<-tapply(base[,n.tamaño],base$identificador.final,sum)
-if (length(casos.estrato)==0){
-	informacion$casos<-informacion$tamaño/sum(informacion$tamaño)*casos
-} else if (length(casos.estrato)==nrow(informacion)) {
-	informacion$casos<-casos.estrato
-} else if (length(casos.estrato)==1) {
-	cat('A cada estrato se le asignara el numero de casos: ',casos,'\n\n')
-	informacion$casos<-casos.estrato
-} else {
-	stop('LA ASIGNACION DE CASOS NO ES ADECUADA \n\n')
-}
-basemuestra<<-base
-informacion<<-informacion
 
 }
 
