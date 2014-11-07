@@ -104,6 +104,31 @@ muestras.vivienda<-function(casos,
   
   basemuestra<<-base
   informacion<<-informacion
-  
+  library(plyr)
+casos<-informacion$casos
+y<-which(casos<minimo.estrato)
+base$identificador.final<-base$identificador
+
+v1<-NULL
+for(i in 1:length(y)){
+	v1[i]<-paste("'",names(y)[i],"'",sep="")
+}
+
+v1<-paste(v1,collapse=",")
+
+v2<-rep("resto",length(y))
+
+v3<-NULL
+for(i in 1:length(y)){
+	v3[i]<-paste("'",v2[i],"'",sep="")
+}
+
+v3<-paste(v3,collapse=",")
+
+base$identificador.final<-eval(parse(text=paste(
+	'mapvalues(base$identificador.final, from = c(',v1,'),to = c(',v3,'))'
+	,sep="")))
+
+n.identificador<-match('identificador.final',names(base))
 }
 
