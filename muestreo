@@ -108,8 +108,8 @@ muestras.vivienda<-function(casos,
 ### Creando el estrato resto  
   
 library(plyr)
-casos<-informacion$casos
-y<-which(casos<minimo.estrato)
+casos1<-informacion$casos
+y<-which(casos1<minimo.estrato)
 base$identificador.final<-base$identificador
 
 v1<-NULL
