@@ -133,5 +133,20 @@ base$identificador.final<-eval(parse(text=paste(
 	,sep="")))
 
 n.identificador<-match('identificador.final',names(base))
+
+### Calculando de nuevo 
+informacion<-data.frame(row.names =levels(base$identificador.final))
+informacion$tamaño<-tapply(base[,n.tamaño],base$identificador.final,sum)
+if (length(casos.estrato)==0){
+	informacion$casos<-informacion$tamaño/sum(informacion$tamaño)*casos
+} else if (length(casos.estrato)==nrow(informacion)) {
+	informacion$casos<-casos.estrato
+} else if (length(casos.estrato)==1) {
+	cat('A cada estrato se le asignara el numero de casos: ',casos,'\n\n')
+	informacion$casos<-casos.estrato
+} else {
+	stop('LA ASIGNACION DE CASOS NO ES ADECUADA \n\n')
+}
+
 }
 
