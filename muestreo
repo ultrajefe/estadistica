@@ -147,6 +147,8 @@ if (length(casos.estrato)==0){
 } else {
 	stop('LA ASIGNACION DE CASOS NO ES ADECUADA \n\n')
 }
+basemuestra<<-base
+informacion<<-informacion
 
 }
 
