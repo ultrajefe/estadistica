@@ -1,8 +1,7 @@
 library('psych')  ##corr.test
 
-setwd('//192.168.1.27/Alberto/evaluacion de personajes - 30oct2014')
 
-base<-read.csv2('ciudadania1.csv',sep=',')
+base<-read.csv2('.csv',sep=',')
 
 summary(base)
 
