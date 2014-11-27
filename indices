@@ -1,0 +1,79 @@
+
+library("mirt")
+library('car')
+library('nortest')
+library('psych')
+
+setwd('//192.168.1.27/ProyectosActivos/encuesta nacional 2014 (invierno)/municipal/análisis de prueba')
+load('//192.168.1.27/ProyectosActivos/encuesta nacional 2014 (invierno)/municipal/análisis de prueba/imputación de prueba Álvaro Obregón 2014 invierno.RData')
+
+
+
+length(imputaciones)
+
+
+names(imputaciones[[1]])
+
+
+
+
+ii=1
+
+
+
+##################### INDICE DE SERVICIOS (ISACS)
+pesosisacs<-matrix(NA,16,2)
+a<-matrix(NA,16,2)
+
+
+#Se leen los datos necesarios para el indicador de servicios
+datos<-subset(imputaciones[[ii]],select=c(pm.basura, pm.drenaje, pm.pavimentacion, pm.vialidades,
+                                          pm.alumbrado, pm.parques, pm.agua, pm.ambulantaje, pm.salud,
+                                          pm.internet, pm.portal, pm.eventos, pm.negocios,
+                                          pm.construccion, pm.turismo, pm.deporte))
+
+
+
+for(j in 1:length(datos)){
+  datos[,j]<-as.numeric(datos[,j])
+}
+
+#Ajuste del modelo IRT
+modelo <- mirt(datos,1,itemtype='graded')
+
+#Verificacion del ajuste
+coef(modelo)                ##  Presenta los coeficientes para las ecuaciones de modelos irt
+modelo                      ##  Diversos estadisticos de ajuste (BIC, AIC, etc)
+residuals(modelo,na.rm=T)   ##  Prueba sobre la indenpendecia de los residuales
+a[,1]<-modelo@F             
+a[,2]<-modelo@h2             
+rownames(a)<-colnames(datos)
+
+### Calculo de los scores para cada individuo dada la probabilidad calculada por la funcio mirt
+resultados<-fscores(modelo, full.scores=F, method='EAP')
+resultados1<-fscores(modelo, full.scores=T, method='EAP')
+
+pdf(paste('Histograma de Combinaciones de ISACS',ii,'.pdf',sep=""),width=16,height=12)
+hist(resultados[,resultados[,"F1"],freq=F,main=paste('Combinaciones de ISACS',ii,sep=""),xlab='ISACS',ylab='Densidad')
+  lines(density(resultados[,"F1"]),col='red')
+dev.off()
+
+pdf(paste('Histograma de ISACS',ii,'.pdf',sep=""),width=16,height=12)
+hist(resultados1[,resultados1[,"F1"],freq=F,main=paste('ISACS',ii,sep=""),xlab='ISACS',ylab='Densidad')
+  lines(density(resultados1[,"F1"]),col='red')
+dev.off()
+
+
+# Prueba de normalidad sobre el indicador
+lillie.test(resultados[,ncol(resultados)-1])
+lillie.test(resultados1[,ncol(resultados1)])
+
+
+
+imputaciones[[ii]]$ISACS<-ISACS
+
+
+pesosisacs<-rbind(pesosisacs,a)
+
+
+
