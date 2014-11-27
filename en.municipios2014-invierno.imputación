@@ -1,0 +1,138 @@
+library(estadistica)
+library(Hmisc)
+library(car)
+library(stringr)
+library(mi)
+
+
+
+# importo la base
+# ahorita está programado solo para álvaro obregón y se tomó ii=8 (sin usar el ciclo for)
+
+
+
+base<-spss.import(file="Alvaro Obregon, DF prueba para script.sav",
+                  missing=T)
+
+
+
+
+for(ii in 1:length(levels(base$estratonum))){
+
+
+
+  
+  variables<-c('ponderador.z1','estratonum',
+               'sexo','edad.z3',
+               'pais.situacion.z4','pais.democracia.z4','pais.buencamino.z4','mun.buencamino.z4','evalua.economia.z4',
+               'autoridades.acuerdo.a.z4','autoridades.acuerdo.b.z4','autoridades.acuerdo.c.z4','pres.riendas.z5','presmun.riendas.z5',
+               
+               'presmun.servicios.a.z3','presmun.servicios.b.z3','presmun.servicios.c.z3','presmun.servicios.d.z3','presmun.servicios.e.z3',
+               'presmun.servicios.f.z3','presmun.servicios.g.z3','presmun.servicios.h.z3','presmun.servicios.i.z3','presmun.servicios.j.z3',
+               'presmun.servicios.k.z3','presmun.servicios.l.z3','presmun.servicios.m.z3','presmun.servicios.n.z3','presmun.servicios.o.z3',
+               'presmun.servicios.p.z3',
+               'autoridades.evalua.a.z3','autoridades.evalua.b.z3','autoridades.evalua.c.z3',
+               'calidad.z4','calidad.comparacion.z4',
+               'satis.movilidad.z4','satis.ambiente.z4','satis.vivienda.z4','satis.diversion.z4','satis.escuelas.z4',
+               'satis.cultura.z4','satis.naturaleza.z4','satis.armonia.z4','satis.seguridad.z4','satis.salud.z4',
+               'satis.trabajo.z4','satis.gob.z4',
+               
+               'elec.dip.a','elec.dip.b','elec.dip.c','cercania','seg.diaria.z4','seg.noche.z4','seg.casa.z4',
+               'escolaridad.z3','clase.z4')  
+
+
+nombresfinales<-c('ponderador','municipio',
+                  'sexo','edad',
+                  'p.situacion','p.democracia','p.camino','m.camino','economia',
+                  'acuerdo.presidente','acuerdo.gobernador','acuerdo.presmun','riendas.presidente','riendas.presmun',
+                  'pm.basura','pm.drenaje','pm.pavimentacion','pm.vialidades','pm.alumbrado',
+                  'pm.parques','pm.agua','pm.ambulantaje','pm.salud','pm.internet',
+                  'pm.portal','pm.eventos','pm.negocios','pm.construccion','pm.turismo',
+                  'pm.deporte',
+                  'e.presidente','e.gobernador','e.presmun',
+                  'calidad','calidad.comparada',
+                  's.movilidad','s.medioambiente','s.vivienda','s.diversion','s.escuelas',
+                  's.museos','s.naturaleza','s.convivencia','s.seguridad','s.salud',
+                  's.empleo','s.gobierno',
+                  
+                  'dip.primera','dip.segunda','dip.negativa','cercania','seg.diaria','seg.noche','seg.casa',
+                  'escolaridad','clase'
+                  )
+
+  
+  n.variables<-match(variables,names(base))
+  n.variables<-na.omit(n.variables)
+  
+
+base.estrato<-base[,n.variables]
+
+m.variables<-match(names(base.estrato),variables)
+
+names(base.estrato)<-nombresfinales[m.variables]
+
+
+  
+  base.estrato<-base.estrato[base.estrato$municipio==levels(base.estrato$municipio)[ii],]
+  
+  base.estrato<-droplevels(base.estrato)
+  
+  
+  
+  
+  
+  
+  missing.pattern.plot(base.estrato,clustered=TRUE,main='Status de la base',y.order=TRUE,x.order=TRUE)   #diagnóstico de la base
+
+
+  noentran<-match(c('ponderador','municipio','dip.segunda','dip.negativa','dip.primera','cercania'),names(base.estrato))
+  
+  
+  
+  'quitando los espacios en blanco de todas las respuestas'
+
+  for (i in 1:length(base.estrato)){
+    names(base.estrato)[i]
+    vec<-levels(base.estrato[,i])
+    vec<-gsub(" ","",vec)
+    levels(base.estrato[,i])<-vec
+  }
+
+  remove(vec,i,k)
+  
+  
+  
+  
+
+  variable<-names(base.estrato)[noentran]
+  info<-mi.info(base.estrato)      #para ver los tipos de variables que tenemos
+  info
+  p<-NULL                             #se corre si se definió el vector variable
+  for (a in 1:length(variable)){
+    p[a]<-match(variable[a],names(base.estrato))  
+  }
+  lista<-as.list(rep(TRUE,length(base.estrato)))    #se corre siempre para crear el vector que indica si algo entra o no
+  for  (a in 1:length(p)){
+    lista[[p[a]]]<-FALSE
+  }
+  info<-mi.info.update.include(info,list=lista)
+  info
+  
+  info
+
+
+
+
+  ruido<-noise.control(method=c("reshuffling"),K=10,post.run.iter=10)
+  IMP<-mi(base.estrato,info,n.imp=5,n.iter=10,add.noise=F, max.minutes = 10000,R.hat=1.2,seed=1456445)     #imputando
+  imputaciones<-mi.completed(IMP)
+  
+
+rm(list=setdiff(ls(), "imputaciones"))
+
+  save.image(paste("imputaciones",ii,".RData",sep=""))
+  
+  
+}
+
+
+
