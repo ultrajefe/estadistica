@@ -72,7 +72,7 @@ dev.off()
 lillie.test(resultados[,ncol(resultados)-1])
 lillie.test(resultados1[,ncol(resultados1)])
 
-ISACSmod<-pnorm(resultados1[,"F1"])
+ISACSmod<-pnorm(resultados1[,"F1"])*100
 
 minmodeloisacs<-fscores(modelo, method='EAP', response.pattern = rep(1,16))[18]
 maxmodeloisacs<-fscores(modelo, method='EAP', response.pattern = rep(6,16))[18]
@@ -134,7 +134,7 @@ dev.off()
 lillie.test(resultados[,ncol(resultados)-1])
 lillie.test(resultados1[,ncol(resultados1)])
 
-IDEALCmod<-pnorm(resultados1[,"F1"])
+IDEALCmod<-pnorm(resultados1[,"F1"])*100
 
 minmodeloidealc<-fscores(modelo, method='EAP', response.pattern = rep(1,19))[21]
 maxmodeloidealc<-fscores(modelo, method='EAP', response.pattern = c(rep(6,16),3,2,6))[21]
@@ -198,7 +198,7 @@ dev.off()
 lillie.test(resultados[,ncol(resultados)-1])
 lillie.test(resultados1[,ncol(resultados1)])
 
-INCAVmod<-pnorm(resultados1[,"F1"])
+INCAVmod<-pnorm(resultados1[,"F1"])*100
 
 minmodeloincav<-fscores(modelo, method='EAP', response.pattern = rep(1,14))[16]
 maxmodeloincav<-fscores(modelo, method='EAP', response.pattern = c(rep(4,12),5,3))[16]
@@ -258,7 +258,7 @@ dev.off()
 lillie.test(resultados[,ncol(resultados)-1])
 lillie.test(resultados1[,ncol(resultados1)])
 
-INSEGmod<-pnorm(resultados1[,"F1"])
+INSEGmod<-pnorm(resultados1[,"F1"])*100
 
 minmodeloinseg<-fscores(modelo, method='EAP', response.pattern = rep(1,3))[5]
 maxmodeloinseg<-fscores(modelo, method='EAP', response.pattern = rep(4,3))[5]
@@ -281,5 +281,6 @@ remove(a,b,c,d,datos,pesosidealc,pesosincav,pesosinseg,pesosisacs,resultados,res
        IDEALCmod,INCAV,INCAVmod,INSEG,INSEGmod,ISACS,ISACSmod,ii,j,maxmodeloidealc,maxmodeloincav,
        maxmodeloinseg,maxmodeloisacs,minmodeloincav,minmodeloidealc,minmodeloinseg,minmodeloisacs,modelo)
 
-save.image("//192.168.1.27/ProyectosActivos/encuesta nacional 2014 (invierno)/municipal/análisis de 
-           prueba/ws con indicadores prueba.RData")
+save.image("//192.168.1.27/ProyectosActivos/encuesta nacional 2014 (invierno)/municipal/análisis de prueba/ws con indicadores prueba.RData")
+
+
