@@ -277,6 +277,9 @@ write.table(pesosincav,'pesos de INCAV.csv',row.names=F,quote=T,col.names=T,sep=
 write.table(pesosinseg,'pesos de INSEG.csv',row.names=F,quote=T,col.names=T,sep=';')
 
 
-remove(a,b,c,d,datos,pesosidealc,pesosincav,pesosinseg,pesosisacs,resultados,resultados1,IDEALC,IDEALCmod,INCAV,INCAVmod,INSEG,INSEGmod,ISACS,ISACSmod,ii,j,maxmodeloidealc,maxmodeloincav,maxmodeloinseg,maxmodeloisacs,minmodeloincav,minmodeloidealc,minmodeloinseg,minmodeloisacs,modelo)
+remove(a,b,c,d,datos,pesosidealc,pesosincav,pesosinseg,pesosisacs,resultados,resultados1,IDEALC,
+       IDEALCmod,INCAV,INCAVmod,INSEG,INSEGmod,ISACS,ISACSmod,ii,j,maxmodeloidealc,maxmodeloincav,
+       maxmodeloinseg,maxmodeloisacs,minmodeloincav,minmodeloidealc,minmodeloinseg,minmodeloisacs,modelo)
 
-save.image("//192.168.1.27/ProyectosActivos/encuesta nacional 2014 (invierno)/municipal/análisis de prueba/ws con indicadores.RData")
+save.image("//192.168.1.27/ProyectosActivos/encuesta nacional 2014 (invierno)/municipal/análisis de 
+           prueba/ws con indicadores prueba.RData")
