@@ -9,21 +9,24 @@ load('//192.168.1.27/ProyectosActivos/encuesta nacional 2014 (invierno)/municipa
 
 
 
-length(imputaciones)
+pesosisacs<-NULL
+a<-matrix(NA,16,2)
+
+pesosidealc<-NULL
+b<-matrix(NA,19,2)
+
+pesosincav<-NULL
+c<-matrix(NA,14,2)
+
+pesosinseg<-NULL
+d<-matrix(NA,3,2)
 
 
-names(imputaciones[[1]])
-
-
-
-
-ii=1
+for (ii in 1:length(imputaciones)){
 
 
 
 ##################### INDICE DE SERVICIOS (ISACS)
-pesosisacs<-matrix(NA,16,2)
-a<-matrix(NA,16,2)
 
 
 #Se leen los datos necesarios para el indicador de servicios
@@ -48,18 +51,19 @@ residuals(modelo,na.rm=T)   ##  Prueba sobre la indenpendecia de los residuales
 a[,1]<-modelo@F             
 a[,2]<-modelo@h2             
 rownames(a)<-colnames(datos)
+colnames(a)<-c('F1','SE_F1')
 
 ### Calculo de los scores para cada individuo dada la probabilidad calculada por la funcio mirt
 resultados<-fscores(modelo, full.scores=F, method='EAP')
 resultados1<-fscores(modelo, full.scores=T, method='EAP')
 
 pdf(paste('Histograma de Combinaciones de ISACS',ii,'.pdf',sep=""),width=16,height=12)
-hist(resultados[,"F1"],freq=F,main=paste('Combinaciones de ISACS',ii,sep=""),xlab='ISACS',ylab='Densidad')
+hist(resultados[,"F1"],freq=F,main=paste('Combinaciones de ISACS',ii,sep=""),xlab='ISACS',ylab='Densidad',col='dodgerblue2')
   lines(density(resultados[,"F1"]),col='red')
 dev.off()
 
 pdf(paste('Histograma de ISACS',ii,'.pdf',sep=""),width=16,height=12)
-hist(resultados1[,"F1"],freq=F,main=paste('ISACS',ii,sep=""),xlab='ISACS',ylab='Densidad')
+hist(resultados1[,"F1"],freq=F,main=paste('ISACS',ii,sep=""),xlab='ISACS',ylab='Densidad',col='dodgerblue2')
   lines(density(resultados1[,"F1"]),col='red')
 dev.off()
 
@@ -68,13 +72,211 @@ dev.off()
 lillie.test(resultados[,ncol(resultados)-1])
 lillie.test(resultados1[,ncol(resultados1)])
 
-ISACS<-pnorm(resultados1[,"F1"])
+ISACSmod<-pnorm(resultados1[,"F1"])
+
+minmodeloisacs<-fscores(modelo, method='EAP', response.pattern = rep(1,16))[18]
+maxmodeloisacs<-fscores(modelo, method='EAP', response.pattern = rep(6,16))[18]
+ISACS<-(resultados1[,"F1"]-minmodeloisacs)/(maxmodeloisacs-minmodeloisacs)*100
 
 
+imputaciones[[ii]]$ISACSmod<-ISACSmod
 imputaciones[[ii]]$ISACS<-ISACS
 
-
-pesosisacs<-rbind(pesosisacs,a)
-
+pesosisacs<-cbind(pesosisacs,a)
 
 
+
+
+#################### Indice de Alcalde Ideal
+
+
+#Se leen los datos necesarios para el indicador de servicios
+datos<-subset(imputaciones[[ii]],select=c(pm.basura, pm.drenaje, pm.pavimentacion, pm.vialidades,
+                                          pm.alumbrado, pm.parques, pm.agua, pm.ambulantaje, pm.salud,
+                                          pm.internet, pm.portal, pm.eventos, pm.negocios,
+                                          pm.construccion, pm.turismo, pm.deporte,m.camino,
+                                          riendas.presmun,e.presmun))
+
+
+
+for(j in 1:length(datos)){
+  datos[,j]<-as.numeric(datos[,j])
+}
+
+#Ajuste del modelo IRT
+modelo <- mirt(datos,1,itemtype='graded')
+
+#Verificacion del ajuste
+coef(modelo)                ##  Presenta los coeficientes para las ecuaciones de modelos irt
+modelo                      ##  Diversos estadisticos de ajuste (BIC, AIC, etc)
+residuals(modelo,na.rm=T)   ##  Prueba sobre la indenpendecia de los residuales
+b[,1]<-modelo@F             
+b[,2]<-modelo@h2             
+rownames(b)<-colnames(datos)
+colnames(b)<-c('F1','SE_F1')
+
+### Calculo de los scores para cada individuo dada la probabilidad calculada por la funcio mirt
+resultados<-fscores(modelo, full.scores=F, method='EAP')
+resultados1<-fscores(modelo, full.scores=T, method='EAP')
+
+pdf(paste('Histograma de Combinaciones de IDEALC',ii,'.pdf',sep=""),width=16,height=12)
+hist(resultados[,"F1"],freq=F,main=paste('Combinaciones de IDEALC',ii,sep=""),xlab='IDEALC',ylab='Densidad',col='dodgerblue2')
+lines(density(resultados[,"F1"]),col='red')
+dev.off()
+
+pdf(paste('Histograma de IDEALC',ii,'.pdf',sep=""),width=16,height=12)
+hist(resultados1[,"F1"],freq=F,main=paste('IDEALC',ii,sep=""),xlab='IDEALC',ylab='Densidad',col='dodgerblue2')
+lines(density(resultados1[,"F1"]),col='red2')
+dev.off()
+
+
+# Prueba de normalidad sobre el indicador
+lillie.test(resultados[,ncol(resultados)-1])
+lillie.test(resultados1[,ncol(resultados1)])
+
+IDEALCmod<-pnorm(resultados1[,"F1"])
+
+minmodeloidealc<-fscores(modelo, method='EAP', response.pattern = rep(1,19))[21]
+maxmodeloidealc<-fscores(modelo, method='EAP', response.pattern = c(rep(6,16),3,2,6))[21]
+IDEALC<-(resultados1[,"F1"]-minmodeloidealc)/(maxmodeloidealc-minmodeloidealc)*100
+
+pesosidealc<-cbind(pesosidealc,b)
+
+imputaciones[[ii]]$IDEALCmod<-IDEALCmod
+imputaciones[[ii]]$IDEALC<-IDEALC
+
+
+
+
+
+
+
+
+################ ÍNCAV
+
+
+
+#Se leen los datos necesarios para el indicador de servicios
+datos<-subset(imputaciones[[ii]],select=c(s.movilidad,s.medioambiente,s.vivienda,s.diversion,s.escuelas,
+                                          s.museos,s.naturaleza,s.convivencia,s.seguridad,s.salud,
+                                          s.empleo,s.gobierno,calidad,calidad.comparada))
+
+
+
+for(j in 1:length(datos)){
+  datos[,j]<-as.numeric(datos[,j])
+}
+
+#Ajuste del modelo IRT
+modelo <- mirt(datos,1,itemtype='graded')
+
+#Verificacion del ajuste
+coef(modelo)                ##  Presenta los coeficientes para las ecuaciones de modelos irt
+modelo                      ##  Diversos estadisticos de ajuste (BIC, AIC, etc)
+residuals(modelo,na.rm=T)   ##  Prueba sobre la indenpendecia de los residuales
+c[,1]<-modelo@F             
+c[,2]<-modelo@h2             
+rownames(c)<-colnames(datos)
+colnames(c)<-c('F1','SE_F1')
+
+### Calculo de los scores para cada individuo dada la probabilidad calculada por la funcio mirt
+resultados<-fscores(modelo, full.scores=F, method='EAP')
+resultados1<-fscores(modelo, full.scores=T, method='EAP')
+
+pdf(paste('Histograma de Combinaciones de INCAV',ii,'.pdf',sep=""),width=16,height=12)
+  hist(resultados[,"F1"],freq=F,main=paste('Combinaciones de INCAV',ii,sep=""),xlab='INCAV',ylab='Densidad',col='dodgerblue2')
+    lines(density(resultados[,"F1"]),col='red2')
+dev.off()
+
+pdf(paste('Histograma de INCAV',ii,'.pdf',sep=""),width=16,height=12)
+hist(resultados1[,"F1"],freq=F,main=paste('INCAV',ii,sep=""),xlab='INCAV',ylab='Densidad',col='dodgerblue2')
+lines(density(resultados1[,"F1"]),col='red')
+dev.off()
+
+
+# Prueba de normalidad sobre el indicador
+lillie.test(resultados[,ncol(resultados)-1])
+lillie.test(resultados1[,ncol(resultados1)])
+
+INCAVmod<-pnorm(resultados1[,"F1"])
+
+minmodeloincav<-fscores(modelo, method='EAP', response.pattern = rep(1,14))[16]
+maxmodeloincav<-fscores(modelo, method='EAP', response.pattern = c(rep(4,12),5,3))[16]
+INCAV<-(resultados1[,"F1"]-minmodeloincav)/(maxmodeloincav-minmodeloincav)*100
+
+pesosincav<-cbind(pesosincav,c)
+
+imputaciones[[ii]]$INCAVmod<-INCAVmod
+imputaciones[[ii]]$INCAV<-INCAV
+
+
+
+
+
+
+################ INSEG
+
+
+
+#Se leen los datos necesarios para el indicador de servicios
+datos<-subset(imputaciones[[ii]],select=c(seg.diaria,seg.noche,seg.casa))
+
+
+
+for(j in 1:length(datos)){
+  datos[,j]<-as.numeric(datos[,j])
+}
+
+#Ajuste del modelo IRT
+modelo <- mirt(datos,1,itemtype='graded')
+
+#Verificacion del ajuste
+coef(modelo)                ##  Presenta los coeficientes para las ecuaciones de modelos irt
+modelo                      ##  Diversos estadisticos de ajuste (BIC, AIC, etc)
+residuals(modelo,na.rm=T)   ##  Prueba sobre la indenpendecia de los residuales
+d[,1]<-modelo@F             
+d[,2]<-modelo@h2             
+rownames(d)<-colnames(datos)
+colnames(d)<-c('F1','SE_F1')
+
+### Calculo de los scores para cada individuo dada la probabilidad calculada por la funcio mirt
+resultados<-fscores(modelo, full.scores=F, method='EAP')
+resultados1<-fscores(modelo, full.scores=T, method='EAP')
+
+pdf(paste('Histograma de Combinaciones de INSEG',ii,'.pdf',sep=""),width=16,height=12)
+hist(resultados[,"F1"],freq=F,main=paste('Combinaciones de INSEG',ii,sep=""),xlab='INSEG',ylab='Densidad',col='dodgerblue2')
+lines(density(resultados[,"F1"]),col='red2')
+dev.off()
+
+pdf(paste('Histograma de INSEG',ii,'.pdf',sep=""),width=16,height=12)
+hist(resultados1[,"F1"],freq=F,main=paste('INSEG',ii,sep=""),xlab='INSEG',ylab='Densidad',col='dodgerblue2')
+lines(density(resultados1[,"F1"]),col='red')
+dev.off()
+
+
+# Prueba de normalidad sobre el indicador
+lillie.test(resultados[,ncol(resultados)-1])
+lillie.test(resultados1[,ncol(resultados1)])
+
+INSEGmod<-pnorm(resultados1[,"F1"])
+
+minmodeloinseg<-fscores(modelo, method='EAP', response.pattern = rep(1,3))[5]
+maxmodeloinseg<-fscores(modelo, method='EAP', response.pattern = rep(4,3))[5]
+INSEG<-(resultados1[,"F1"]-minmodeloinseg)/(maxmodeloinseg-minmodeloinseg)*100
+
+pesosinseg<-cbind(pesosinseg,c)
+
+imputaciones[[ii]]$INSEGmod<-INSEGmod
+imputaciones[[ii]]$INSEG<-INSEG
+
+}
+
+write.table(pesosisacs,'pesos de ISACS.csv',row.names=F,quote=T,col.names=T,sep=';')
+write.table(pesosidealc,'pesos de IDEALC.csv',row.names=F,quote=T,col.names=T,sep=';')
+write.table(pesosincav,'pesos de INCAV.csv',row.names=F,quote=T,col.names=T,sep=';')
+write.table(pesosinseg,'pesos de INSEG.csv',row.names=F,quote=T,col.names=T,sep=';')
+
+
+remove(a,b,c,d,datos,pesosidealc,pesosincav,pesosinseg,pesosisacs,resultados,resultados1,IDEALC,IDEALCmod,INCAV,INCAVmod,INSEG,INSEGmod,ISACS,ISACSmod,ii,j,maxmodeloidealc,maxmodeloincav,maxmodeloinseg,maxmodeloisacs,minmodeloincav,minmodeloidealc,minmodeloinseg,minmodeloisacs,modelo)
+
+save.image("//192.168.1.27/ProyectosActivos/encuesta nacional 2014 (invierno)/municipal/análisis de prueba/ws con indicadores.RData")
