@@ -285,12 +285,3 @@ save.image("//192.168.1.27/ProyectosActivos/encuesta nacional 2014 (invierno)/mu
 
 
 
-
-names(imputaciones[[1]])
-
-
-summary(imputaciones[[1]][c(57,58)])
-summary(imputaciones[[1]][58])
-
-
-summary(imputaciones[[1]][57]*100-imputaciones[[1]][58])
