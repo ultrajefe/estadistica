@@ -54,12 +54,12 @@ resultados<-fscores(modelo, full.scores=F, method='EAP')
 resultados1<-fscores(modelo, full.scores=T, method='EAP')
 
 pdf(paste('Histograma de Combinaciones de ISACS',ii,'.pdf',sep=""),width=16,height=12)
-hist(resultados[,resultados[,"F1"],freq=F,main=paste('Combinaciones de ISACS',ii,sep=""),xlab='ISACS',ylab='Densidad')
+hist(resultados[,"F1"],freq=F,main=paste('Combinaciones de ISACS',ii,sep=""),xlab='ISACS',ylab='Densidad')
   lines(density(resultados[,"F1"]),col='red')
 dev.off()
 
 pdf(paste('Histograma de ISACS',ii,'.pdf',sep=""),width=16,height=12)
-hist(resultados1[,resultados1[,"F1"],freq=F,main=paste('ISACS',ii,sep=""),xlab='ISACS',ylab='Densidad')
+hist(resultados1[,"F1"],freq=F,main=paste('ISACS',ii,sep=""),xlab='ISACS',ylab='Densidad')
   lines(density(resultados1[,"F1"]),col='red')
 dev.off()
 
@@ -68,6 +68,7 @@ dev.off()
 lillie.test(resultados[,ncol(resultados)-1])
 lillie.test(resultados1[,ncol(resultados1)])
 
+ISACS<-pnorm(resultados1[,"F1"])
 
 
 imputaciones[[ii]]$ISACS<-ISACS
