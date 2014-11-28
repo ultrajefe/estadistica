@@ -7,7 +7,7 @@ library('psych')
 setwd('//192.168.1.27/ProyectosActivos/encuesta nacional 2014 (invierno)/municipal/análisis de prueba')
 load('//192.168.1.27/ProyectosActivos/encuesta nacional 2014 (invierno)/municipal/análisis de prueba/imputación de prueba Álvaro Obregón 2014 invierno.RData')
 
-
+set.seed(7)
 
 pesosisacs<-NULL
 a<-matrix(NA,16,2)
@@ -284,3 +284,13 @@ remove(a,b,c,d,datos,pesosidealc,pesosincav,pesosinseg,pesosisacs,resultados,res
 save.image("//192.168.1.27/ProyectosActivos/encuesta nacional 2014 (invierno)/municipal/análisis de prueba/ws con indicadores prueba.RData")
 
 
+
+
+names(imputaciones[[1]])
+
+
+summary(imputaciones[[1]][c(57,58)])
+summary(imputaciones[[1]][58])
+
+
+summary(imputaciones[[1]][57]*100-imputaciones[[1]][58])
