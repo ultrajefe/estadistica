@@ -1,0 +1,280 @@
+
+
+ponderacion.vivienda<-function(sexo='sexo',edad='edad',estrato=NULL,dir.base,dir.muestra){
+  
+  require(survey)
+  require(sampling)
+  require(Hmisc)
+  
+  
+  #cargo la base (con las secciones correctas)
+  base <-spss.get(dir.base,use.value.labels=T)
+  if(exists('base')==F)stop("No se encontró la base en la dirección que indicas")
+  base$seccion.levan<-as.factor(base$seccion.levan)
+  
+  
+  #el archivo con la muestra
+  
+  muestra<-csv.get(dir.muestra)
+  if(exists('muestra')==F)stop("No se encontró la muestra en la dirección que indicas")
+  
+  
+  #cálculo de las probabilidades de inclusión de elementos dentro de las secciones
+  #y asignación de dichos valores en la base
+  
+  
+  encuestaspseccion<-summary(base$seccion.levan,maxsum=100000)
+  encuestaspseccion
+  
+  tamanoseccion<-muestra$ln.original
+  names(tamanoseccion)<-muestra$secc
+  
+  
+  ########## Calculo probabilidades originales reales
+  
+  probabilidades<-inclusionprobabilities(as.numeric(tamanoseccion),length(encuestaspseccion))
+  
+  names(probabilidades)<-names(tamanoseccion)
+
+  for(i in 1:nrow(muestra)){
+    muestra$probabilidades[i]<-min(muestra$probabilidades[i],1)
+  }
+
+  
+ #############  
+  
+  
+  
+  base$prob1<-probabilidades[match(base$seccion.levan,names(probabilidades))]
+  base$cuantas<-encuestaspseccion[match(base$seccion.levan,names(encuestaspseccion))]
+  base$ln<-muestra$ln.original[match(base$seccion.levan,muestra$secc)]
+  
+ # remove(encuestaspseccion)
+  
+  
+  
+  base$prob2<-base$cuantas/base$ln
+  base$elementominimo<-rep(1,nrow(base))
+  
+  
+  #generamos el objeto de diseño
+  
+  diseno<-svydesign(data=base,ids=~1,probs=~prob1*prob2)
+  
+  
+  
+  
+  
+  
+  
+  
+  #checamos que el total cuadre
+  
+  print(svytotal(base$elementominimo,diseno))
+  print(sum(muestra$ln.original))
+
+ check3<-readline("cuadran los totales?)  s/n")
+ if(check3=='n')stop('apestas!')
+  # calibramos!
+  
+  
+  #checamos los niveles
+  
+  eval(parse(text=paste(
+    'levels(base$',sexo,')'
+    ,sep='')))
+  
+  
+  eval(parse(text=paste(
+    'levels(base$',edad,')'
+    ,sep='')))
+  
+  
+  if((mode(estrato)=='NULL')==FALSE){
+    eval(parse(text=paste(
+      'levels(base$',estrato,')'
+      ,sep='')))
+  }
+  
+  
+  #quitamos los niveles que no furulan
+  
+  eval(parse(text=paste(
+    'base$',sexo,'<-droplevels(base$',sexo,')'
+    ,sep='')))
+  
+  
+  eval(parse(text=paste(
+    'base$',edad,'<-droplevels(base$',edad,')'
+    ,sep='')))
+  
+  
+  if((mode(estrato)=='NULL')==FALSE){
+    eval(parse(text=paste(
+      'base$',estrato,'<-droplevels(base$',estrato,')'
+      ,sep='')))
+  }
+  
+  
+  #checamos que lo haya hecho bien
+  
+  eval(parse(text=paste(
+    'print(levels(base$',sexo,'))'
+    ,sep='')))
+  
+  
+  eval(parse(text=paste(
+    'print(levels(base$',edad,'))'
+    ,sep='')))
+  
+  
+  if((mode(estrato)=='NULL')==FALSE){
+    eval(parse(text=paste(
+      'print(levels(base$',estrato,'))'
+      ,sep='')))
+  }
+  
+ 
+  
+  
+  
+  check2<-readline("están bien los niveles? (recuerda que no deben de existir registros con valores NS/NC)  s/n")
+  if(check2=='n')stop('Checa la base y haz algo al respecto con esos valores perdidos!')
+  
+  
+  
+  totales.sexo<-c(sum(muestra$hom.ln),sum(muestra$muj.ln))
+  totales.edad<-c(
+    sum(muestra$x18años,muestra$x19años,muestra$x20a24),
+    sum(muestra$x25a29),
+    sum(muestra$x30a34),
+    sum(muestra$x35a39),
+    sum(muestra$x40a44),
+    sum(muestra$x45a49),
+    sum(muestra$x50a54),
+    sum(muestra$x55a59),
+    sum(muestra$x60a64),
+    sum(muestra$x65ymas)
+  )
+  
+  if((mode(estrato)=='NULL')==FALSE){
+    totales.estrato<-tapply(base$ln,base$estrato,sum)
+  }
+  
+  
+  eval(parse(text=paste(
+    's<-data.frame(',sexo,'=levels(base$',sexo,'),Freq=c(totales.sexo))'
+    ,sep='')))
+  
+  
+  eval(parse(text=paste(
+    'ed<-data.frame(',edad,'=levels(base$',edad,'),Freq=c(totales.edad))'
+    ,sep='')))
+  
+  
+  
+  if((mode(estrato)=='NULL')==FALSE){
+    eval(parse(text=paste(
+      'st<-data.frame(',estrato,'=levels(base$',estrato,'),Freq=c(totales.estrato))'
+      ,sep='')))
+  
+    
+    
+    st
+    
+    
+    
+    eval(parse(text=paste(
+      'print(levels(base$',estrato,'))'
+      ,sep='')))
+    
+    
+    
+    
+    check3<-readline("están bien los niveles de los estratos? (cuadran en su orden,nombre y todo?)  s/n")
+    if(check3=='n')stop('Checa el orden y nombre de tus estratos y haz que cuadren en la base y en la muestra!')
+    
+    
+  }
+  
+  
+  
+  
+ 
+  if((mode(estrato)=='NULL')==FALSE){
+    eval(parse(text=paste(
+      'diseno_s<-rake(diseno,sample=list(~',sexo,',~',edad,'),population=list(s,ed))'
+      ,sep='')))
+  }
+  
+  
+  if((mode(estrato)=='NULL')==TRUE){
+    eval(parse(text=paste(
+      'diseno_s<-rake(diseno,sample=list(~',sexo,',~',edad,'),population=list(s,ed))'
+      ,sep='')))
+  }
+  
+  if((mode(estrato)=='NULL')==FALSE){
+    eval(parse(text=paste(
+      'diseno_s<-rake(diseno,sample=list(~',sexo,',~',edad,',~',estrato,'),population=list(s,ed,st))'
+      ,sep='')))
+  }
+  
+  
+  
+  
+  sexo.est<-as.matrix(eval(parse(text=paste(
+    '(svytotal(~',sexo,',diseno_s))'
+    ,sep=''))))
+  
+  
+  
+  edad.est<-as.matrix(eval(parse(text=paste(
+    '(svytotal(~',edad,',diseno_s))'
+    ,sep=''))))
+  
+  
+  
+  if((mode(estrato)=='NULL')==FALSE){
+    eval(parse(text=paste(
+      'print(svytotal(~',estrato,',diseno_s))'
+      ,sep='')))
+  }
+  
+ 
+  dbs<-data.frame(sexo.est,totales.sexo)
+  dbs$diferencia<-dbs[,2]-dbs[,1]
+ dbs$diferencia_porcentual<-dbs$diferencia/dbs[,2]
+ names(dbs)<-c('estimación','real','diferencia','diferencia porcentual')
+  
+ 
+  print(dbs)
+ 
+  
+  check4<-readline("están bien los totales por sexo?  s/n")
+  if(check4=='n')stop('Apestas!')
+  
+ dbe<-data.frame(edad.est,c(totales.edad,0))
+ dbe$diferencia<-dbe[,2]-dbe[,1]
+ dbe$diferencia_porcentual<-dbe$diferencia/dbe[,2]
+ names(dbe)<-c('estimación','real','diferencia','diferencia porcentual')
+ 
+ print(dbe)
+ 
+ 
+ check4<-readline("están bien los totales por edad?  s/n")
+ if(check4=='n')stop('Apestas!')
+ 
+ 
+ 
+ 
+  
+  
+  write.csv(weights(diseno_s),file="ponderador de vivienda.csv")
+  
+  
+  
+  
+}
+
+
