@@ -104,9 +104,23 @@ ponderacion.vivienda<-function(sexo='sexo',edad='edad',estrato=NULL,dir.base,dir
     ,sep='')))
   
   
+  n.edad<-match(edad,names(base))
+  edad.temp<-levels(base[,n.edad])
+
+  
   eval(parse(text=paste(
     'base$',edad,'<-droplevels(base$',edad,')'
     ,sep='')))
+  
+  
+  
+  if(length(levels(base[,n.edad]))!=length(edad.temp)){
+    a.a<-match(levels(base[,edad]),edad.temp)
+    a.b<-1:max(a.a)
+    a.c<-a.b[is.na(match(a.b,a.a))]
+#    levels(base[,n.edad])<-c(levels(base[,n.edad]),edad.temp[a.c])
+ #   base[,n.edad]<-ordered(base[,n.edad],edad.temp[1:max(a.a)]) 
+  }
   
   
   if((mode(estrato)=='NULL')==FALSE){
@@ -156,6 +170,11 @@ ponderacion.vivienda<-function(sexo='sexo',edad='edad',estrato=NULL,dir.base,dir
     sum(muestra$x60a64),
     sum(muestra$x65ymas)
   )
+  
+  if(length(levels(base[,n.edad]))!=length(edad.temp)){
+  totales.edad<-totales.edad[-a.c]
+}
+  
   
   if((mode(estrato)=='NULL')==FALSE){
     totales.estrato<-tapply(base$ln,base$estrato,sum)
@@ -240,6 +259,22 @@ ponderacion.vivienda<-function(sexo='sexo',edad='edad',estrato=NULL,dir.base,dir
       'print(svytotal(~',estrato,',diseno_s))'
       ,sep='')))
   }
+  
+  totales.sexo<-c(sum(muestra$hom.ln),sum(muestra$muj.ln))
+totales.edad<-c(
+  sum(muestra$x18años,muestra$x19años,muestra$x20a24),
+  sum(muestra$x25a29),
+  sum(muestra$x30a34),
+  sum(muestra$x35a39),
+  sum(muestra$x40a44),
+  sum(muestra$x45a49),
+  sum(muestra$x50a54),
+  sum(muestra$x55a59),
+  sum(muestra$x60a64),
+  sum(muestra$x65ymas)
+)
+  
+  
   
  
   dbs<-data.frame(sexo.est,totales.sexo)
