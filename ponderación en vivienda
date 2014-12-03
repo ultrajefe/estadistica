@@ -216,7 +216,7 @@ ponderacion.vivienda<-function(sexo='sexo',edad='edad',estrato=NULL,dir.base,dir
   
   if((mode(estrato)=='NULL')==FALSE){
     eval(parse(text=paste(
-      'diseno_s<-rake(diseno,sample=list(~',sexo,',~',edad,',~',estrato,'),population=list(s,ed,st),control=list(maxit(1000)))'
+      'diseno_s<-rake(diseno,sample=list(~',sexo,',~',edad,',~',estrato,'),population=list(s,ed,st),control=list(maxit=1000))'
       ,sep='')))
   }
   
