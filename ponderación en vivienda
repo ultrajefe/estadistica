@@ -1,5 +1,3 @@
-
-
 ponderacion.vivienda<-function(sexo='sexo',edad='edad',estrato=NULL,dir.base,dir.muestra){
   
   require(survey)
@@ -35,13 +33,13 @@ ponderacion.vivienda<-function(sexo='sexo',edad='edad',estrato=NULL,dir.base,dir
   probabilidades<-inclusionprobabilities(as.numeric(tamanoseccion),length(encuestaspseccion))
   
   names(probabilidades)<-names(tamanoseccion)
-
+  
   for(i in 1:nrow(muestra)){
     muestra$probabilidades[i]<-min(muestra$probabilidades[i],1)
   }
-
   
- #############  
+  
+  #############  
   
   
   
@@ -49,7 +47,7 @@ ponderacion.vivienda<-function(sexo='sexo',edad='edad',estrato=NULL,dir.base,dir
   base$cuantas<-encuestaspseccion[match(base$seccion.levan,names(encuestaspseccion))]
   base$ln<-muestra$ln.original[match(base$seccion.levan,muestra$secc)]
   
- # remove(encuestaspseccion)
+  # remove(encuestaspseccion)
   
   
   
@@ -72,9 +70,9 @@ ponderacion.vivienda<-function(sexo='sexo',edad='edad',estrato=NULL,dir.base,dir
   
   print(svytotal(base$elementominimo,diseno))
   print(sum(muestra$ln.original))
-
- check3<-readline("cuadran los totales?)  s/n")
- if(check3=='n')stop('apestas!')
+  
+  check3<-readline("cuadran los totales?)  s/n")
+  if(check3=='n')stop('apestas!')
   # calibramos!
   
   
@@ -106,20 +104,21 @@ ponderacion.vivienda<-function(sexo='sexo',edad='edad',estrato=NULL,dir.base,dir
   
   n.edad<-match(edad,names(base))
   edad.temp<-levels(base[,n.edad])
-
+  
   
   eval(parse(text=paste(
     'base$',edad,'<-droplevels(base$',edad,')'
     ,sep='')))
   
   
-  
+  a.d<-0
   if(length(levels(base[,n.edad]))!=length(edad.temp)){
     a.a<-match(levels(base[,edad]),edad.temp)
     a.b<-1:max(a.a)
     a.c<-a.b[is.na(match(a.b,a.a))]
-#    levels(base[,n.edad])<-c(levels(base[,n.edad]),edad.temp[a.c])
- #   base[,n.edad]<-ordered(base[,n.edad],edad.temp[1:max(a.a)]) 
+    a.d<-1
+    #    levels(base[,n.edad])<-c(levels(base[,n.edad]),edad.temp[a.c])
+    #   base[,n.edad]<-ordered(base[,n.edad],edad.temp[1:max(a.a)]) 
   }
   
   
@@ -148,7 +147,7 @@ ponderacion.vivienda<-function(sexo='sexo',edad='edad',estrato=NULL,dir.base,dir
       ,sep='')))
   }
   
- 
+  
   
   
   
@@ -171,9 +170,9 @@ ponderacion.vivienda<-function(sexo='sexo',edad='edad',estrato=NULL,dir.base,dir
     sum(muestra$x65ymas)
   )
   
-  if(length(levels(base[,n.edad]))!=length(edad.temp)){
-  totales.edad<-totales.edad[-a.c]
-}
+  if(a.d==1){
+    totales.edad<-totales.edad[-a.c]
+  }
   
   
   if((mode(estrato)=='NULL')==FALSE){
@@ -196,7 +195,7 @@ ponderacion.vivienda<-function(sexo='sexo',edad='edad',estrato=NULL,dir.base,dir
     eval(parse(text=paste(
       'st<-data.frame(',estrato,'=levels(base$',estrato,'),Freq=c(totales.estrato))'
       ,sep='')))
-  
+    
     
     
     st
@@ -219,7 +218,7 @@ ponderacion.vivienda<-function(sexo='sexo',edad='edad',estrato=NULL,dir.base,dir
   
   
   
- 
+  
   if((mode(estrato)=='NULL')==FALSE){
     eval(parse(text=paste(
       'diseno_s<-rake(diseno,sample=list(~',sexo,',~',edad,'),population=list(s,ed))'
@@ -261,55 +260,53 @@ ponderacion.vivienda<-function(sexo='sexo',edad='edad',estrato=NULL,dir.base,dir
   }
   
   totales.sexo<-c(sum(muestra$hom.ln),sum(muestra$muj.ln))
-totales.edad<-c(
-  sum(muestra$x18años,muestra$x19años,muestra$x20a24),
-  sum(muestra$x25a29),
-  sum(muestra$x30a34),
-  sum(muestra$x35a39),
-  sum(muestra$x40a44),
-  sum(muestra$x45a49),
-  sum(muestra$x50a54),
-  sum(muestra$x55a59),
-  sum(muestra$x60a64),
-  sum(muestra$x65ymas)
-)
+  totales.edad<-c(
+    sum(muestra$x18años,muestra$x19años,muestra$x20a24),
+    sum(muestra$x25a29),
+    sum(muestra$x30a34),
+    sum(muestra$x35a39),
+    sum(muestra$x40a44),
+    sum(muestra$x45a49),
+    sum(muestra$x50a54),
+    sum(muestra$x55a59),
+    sum(muestra$x60a64),
+    sum(muestra$x65ymas)
+  )
   
   
   
- 
+  
   dbs<-data.frame(sexo.est,totales.sexo)
   dbs$diferencia<-dbs[,2]-dbs[,1]
- dbs$diferencia_porcentual<-dbs$diferencia/dbs[,2]
- names(dbs)<-c('estimación','real','diferencia','diferencia porcentual')
+  dbs$diferencia_porcentual<-dbs$diferencia/dbs[,2]
+  names(dbs)<-c('estimación','real','diferencia','diferencia porcentual')
   
- 
+  
   print(dbs)
- 
+  
   
   check4<-readline("están bien los totales por sexo?  s/n")
   if(check4=='n')stop('Apestas!')
   
- dbe<-data.frame(edad.est,c(totales.edad,0))
- dbe$diferencia<-dbe[,2]-dbe[,1]
- dbe$diferencia_porcentual<-dbe$diferencia/dbe[,2]
- names(dbe)<-c('estimación','real','diferencia','diferencia porcentual')
- 
- print(dbe)
- 
- 
- check4<-readline("están bien los totales por edad?  s/n")
- if(check4=='n')stop('Apestas!')
- 
- 
- 
- 
+  dbe<-data.frame(edad.est,c(totales.edad,0))
+  dbe$diferencia<-dbe[,2]-dbe[,1]
+  dbe$diferencia_porcentual<-dbe$diferencia/dbe[,2]
+  names(dbe)<-c('estimación','real','diferencia','diferencia porcentual')
+  
+  print(dbe)
   
   
-  write.csv(weights(diseno_s),file="ponderador de vivienda.csv")
+  check4<-readline("están bien los totales por edad?  s/n")
+  if(check4=='n')stop('Apestas!')
+  
+  
+  
+  
+  
+  
+  write.csv(weights(diseno_s),file="ponderador de vivienda - Tlalnepantla - df 16 - dl 37.csv")
   
   
   
   
 }
-
-
