@@ -170,8 +170,8 @@ ponderacion.vivienda<-function(sexo='sexo',edad='edad',estrato=NULL,dir.base,dir
     sum(muestra$x65ymas)
   )
   
-  if(a.d==1){
-    totales.edad<-totales.edad[-a.c]
+  if(a.d==1 & length(a.c)!=0){
+  totales.edad<-totales.edad[-a.c]
   }
   
   
